@@ -1,152 +1,153 @@
-import swaggerJSDoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
-import { Application } from 'express';
-import path from 'path';
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+import { Application } from "express";
+import path from "path";
 
 const options = {
   definition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'Sengketa API',
-      version: '1.0.0',
-      description: 'API documentation for Sengketa project',
+      title: "Sengketa API",
+      version: "1.0.0",
+      description: "API documentation for Sengketa project",
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: "http://localhost:3003",
       },
     ],
     components: {
       schemas: {
         MenerimaSengketa: {
-          type: 'object',
+          type: "object",
           properties: {
             idSengketa: {
-              type: 'string',
+              type: "string",
             },
             pemohon: {
-              type: 'string',
+              type: "string",
             },
             termohon: {
-              type: 'string',
+              type: "string",
             },
           },
         },
         ValidasiSengketa: {
-          type: 'object',
+          type: "object",
           properties: {
             idSengketa: {
-              type: 'string',
+              type: "string",
             },
             jumlah: {
-              type: 'string',
+              type: "string",
             },
             skpd: {
-              type: 'array',
+              type: "array",
               items: {
-                type: 'string',
+                type: "string",
               },
             },
           },
         },
         PembuatanSidangAwal: {
-          type: 'object',
+          type: "object",
           properties: {
             idSengketa: {
-              type: 'string',
+              type: "string",
             },
             idJadwal: {
-              type: 'string',
+              type: "string",
             },
             agenda: {
-              type: 'string',
+              type: "string",
             },
             tanggal: {
-              type: 'string',
-              format: 'date',
+              type: "string",
+              format: "date",
             },
             alamat: {
-              type: 'string',
+              type: "string",
             },
           },
         },
         TambahSidang: {
-          type: 'object',
+          type: "object",
           properties: {
             idSengketa: {
-              type: 'string',
+              type: "string",
             },
             idJadwal: {
-              type: 'string',
+              type: "string",
             },
             jenis: {
-              type: 'string',
+              type: "string",
             },
             agenda: {
-              type: 'string',
+              type: "string",
             },
             tanggal: {
-              type: 'string',
-              format: 'date',
+              type: "string",
+              format: "date",
             },
             alamat: {
-              type: 'string',
+              type: "string",
             },
           },
         },
         TambahPutusan: {
-          type: 'object',
+          type: "object",
           properties: {
             idSengketa: {
-              type: 'string',
+              type: "string",
             },
             idJadwal: {
-              type: 'string',
+              type: "string",
             },
             statusPutusan: {
-              type: 'string',
+              type: "string",
             },
             cid: {
-              type: 'string',
-              format: 'binary',
-              description: 'PDF file (optional)',
+              type: "string",
+              format: "binary",
+              description: "PDF file (optional)",
             },
             jdih: {
-              type: 'string',
+              type: "string",
             },
           },
         },
         BatalCabutSengketa: {
-          type: 'object',
+          type: "object",
           properties: {
             idSengketa: {
-              type: 'string',
+              type: "string",
             },
             cid: {
-              type: 'string',
-              format: 'binary',
-              description: 'PDF file (optional)',
+              type: "string",
+              format: "binary",
+              description: "PDF file (optional)",
             },
           },
         },
         ContractResponse: {
-          type: 'object',
+          type: "object",
           properties: {
             hash: {
-              type: 'string',
+              type: "string",
             },
           },
         },
       },
     },
   },
-  apis: [path.join(__dirname, '../controllers/*.ts')], // Path to your controller file
+  apis: [path.join(__dirname, "../controllers/*.ts")], // Path to your controller file
 };
 
 const swaggerSpec = swaggerJSDoc(options);
 
 const swaggerDocs = (app: Application) => {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  console.log("Docs available at http://localhost:3003/api-docs");
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 };
 
 export default swaggerDocs;

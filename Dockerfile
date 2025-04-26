@@ -14,7 +14,7 @@ RUN yarn install
 COPY . .
 
 # Expose the port the app runs on.
-EXPOSE 3000
+EXPOSE 3003
 
 # Default command to keep the container running
 CMD ["yarn", "run", "dev"]

@@ -65,7 +65,7 @@ Before you begin, ensure you have met the following requirements:
     ```
     yarn run dev
     ```
-- see on this: http://localhost:3000/api-docs/
+- see on this: http://localhost:3003/api-docs/
 
 ## Project Structure (Update lagi)
 - `ipfs`: Contains data and configurations to facilitate running Docker for IPFS
