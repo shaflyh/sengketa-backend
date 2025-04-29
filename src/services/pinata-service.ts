@@ -8,82 +8,72 @@ export class PinataService {
     if (!file) return "";
 
     try {
+      // Upload file first
       const formData = new FormData();
-      formData.append("file", fs.createReadStream(file.path), {
-        filename: file.originalname,
-      });
+      formData.append("file", fs.createReadStream(file.path));
 
-      // Add Pinata options for file organization
-      const options = JSON.stringify({
-        pinataOptions: {
-          cidVersion: 1,
-        },
-        pinataMetadata: {
-          name: file.originalname,
-          keyvalues: {
-            type: "sengketa-putusan",
-            timestamp: new Date().toISOString(),
-          },
+      const pinataMetadata = JSON.stringify({
+        name: file.originalname,
+        keyvalues: {
+          type: "sengketa-putusan",
+          timestamp: new Date().toISOString(),
         },
       });
-      formData.append("pinataOptions", options);
+      formData.append("pinataMetadata", pinataMetadata);
 
-      const response = await axios.post(PINATA_ENDPOINTS.pinFileToIPFS, formData, {
+      const pinataOptions = JSON.stringify({
+        cidVersion: 1,
+      });
+      formData.append("pinataOptions", pinataOptions);
+
+      const fileResponse = await axios.post(PINATA_ENDPOINTS.pinFileToIPFS, formData, {
+        maxBodyLength: Infinity,
         headers: {
           Authorization: `Bearer ${PINATA_JWT}`,
           ...formData.getHeaders(),
         },
       });
 
-      if (!response.data.IpfsHash) {
+      if (!fileResponse.data.IpfsHash) {
         throw new Error("Failed to get IPFS hash from Pinata");
       }
 
+      // Create metadata object
       const metadata = {
         name: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
-        fileHash: response.data.IpfsHash,
-      };
-
-      // Add metadata options for organization
-      const metadataOptions = {
-        pinataOptions: {
-          cidVersion: 1,
-        },
-        pinataMetadata: {
-          name: `metadata-${file.originalname}`,
-          keyvalues: {
-            type: "sengketa-putusan-metadata",
-            originalFileHash: response.data.IpfsHash,
-            timestamp: new Date().toISOString(),
-          },
+        description: "Sengketa Document Metadata",
+        attributes: {
+          mimetype: file.mimetype,
+          size: file.size,
+          fileHash: fileResponse.data.IpfsHash,
+          uploadedAt: new Date().toISOString(),
+          type: "sengketa-putusan",
         },
       };
 
-      const metadataResponse = await axios.post(
-        PINATA_ENDPOINTS.pinJSONToIPFS,
-        { ...metadata, ...metadataOptions },
-        {
-          headers: {
-            Authorization: `Bearer ${PINATA_JWT}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Upload metadata
+      const metadataResponse = await axios.post(PINATA_ENDPOINTS.pinJSONToIPFS, metadata, {
+        headers: {
+          Authorization: `Bearer ${PINATA_JWT}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Clean up temporary file
+      fs.unlinkSync(file.path);
 
       if (!metadataResponse.data.IpfsHash) {
         throw new Error("Failed to get metadata IPFS hash from Pinata");
       }
 
-      fs.unlinkSync(file.path);
       return metadataResponse.data.IpfsHash;
     } catch (error) {
       console.error("Error uploading to Pinata:", error);
+      // Clean up temporary file in case of error
       if (file.path && fs.existsSync(file.path)) {
         fs.unlinkSync(file.path);
       }
-      throw new Error("Failed to upload file to IPFS");
+      throw error; // Re-throw the error with more details
     }
   }
 
