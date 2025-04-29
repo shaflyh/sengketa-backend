@@ -12,15 +12,8 @@ const panteraPrivateKey = process.env.PANTERA_PRIVATE_KEY;
 const majelisPrivateKey = process.env.MAJELIS_PRIVATE_KEY;
 const polygonRpc = process.env.POLYGON_MAINNET_RPC;
 
-if (
-  !adminPrivateKey ||
-  !panteraPrivateKey ||
-  !majelisPrivateKey ||
-  !polygonRpc
-) {
-  throw new Error(
-    "One or more private keys or RPC URL are missing in environment variables"
-  );
+if (!adminPrivateKey || !panteraPrivateKey || !majelisPrivateKey || !polygonRpc) {
+  throw new Error("One or more private keys or RPC URL are missing in environment variables");
 }
 
 // Format private keys correctly - ensure they are valid hex strings with 0x prefix
@@ -75,7 +68,7 @@ export const majelis = createWalletClient({
 
 export const publicClient = createPublicClient({
   chain: polygon,
-  transport: http("http://hardhat:8545"),
+  transport: http(polygonRpc),
 });
 
 // Function to get ABI for a contract
