@@ -345,7 +345,7 @@ export class ContractService {
       return metadata;
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to get Dokumen");
+      throw new Error(`Failed to get Dokumen: ${error}`);
     }
   }
   static async getJDIH(request: InputIdSengketaJadwal): Promise<GetContractResponse<StructJdih>> {
@@ -356,8 +356,28 @@ export class ContractService {
         abi: sengketAbi,
         functionName: "getJDIH",
         args: [createRequest.idSengketa, createRequest.idJadwal],
-      })) as StructJdih;
-      return toGetContractResponse(request, response);
+      })) as unknown;
+
+      // Convert array-like object to string if necessary
+      let jdihUrl = "";
+      if (typeof response === "string") {
+        jdihUrl = response;
+      } else if (response && typeof response === "object") {
+        // Handle array-like object by joining all character values
+        const chars = Object.entries(response)
+          .filter(([key]) => !isNaN(Number(key)))
+          .sort((a, b) => Number(a[0]) - Number(b[0]))
+          .map(([_, value]) => value)
+          .join("");
+        jdihUrl = chars;
+      }
+
+      const structJdih: StructJdih = {
+        jdih: jdihUrl,
+      };
+
+      console.log("response JDIH: ", jdihUrl);
+      return toGetContractResponse(request, structJdih);
     } catch (error) {
       console.error(error);
       throw new Error("Failed to get JDIH");
