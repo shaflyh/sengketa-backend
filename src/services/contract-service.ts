@@ -28,8 +28,8 @@ import {
   ResponseBatalCabut,
 } from "../models/contract-model";
 import { ContractValidation } from "../validations/contract-validation";
-import { Client } from "./ipfs-service";
 import { Address } from "viem";
+import { PinataService } from "./pinata-service";
 
 export class ContractService {
   static async menerimaSengketa(
@@ -44,11 +44,7 @@ export class ContractService {
         address: sengketaContractAddress as Address,
         abi: sengketAbi,
         functionName: "menerimaSengketa",
-        args: [
-          createRequest.idSengketa,
-          createRequest.pemohon,
-          createRequest.termohon,
-        ],
+        args: [createRequest.idSengketa, createRequest.pemohon, createRequest.termohon],
       });
       return toContractResponse(request, tx);
     } catch (error) {
@@ -65,11 +61,7 @@ export class ContractService {
         address: sengketaContractAddress as Address,
         abi: sengketAbi,
         functionName: "validasiSengketa",
-        args: [
-          createRequest.idSengketa,
-          createRequest.jumlah,
-          createRequest.skpd,
-        ],
+        args: [createRequest.idSengketa, createRequest.jumlah, createRequest.skpd],
       });
       return toContractResponse(request, tx);
     } catch (error) {
@@ -125,15 +117,7 @@ export class ContractService {
   }
 
   static async getCID(file: Express.Multer.File | undefined): Promise<string> {
-    if (file) {
-      const fileUploadResponse = await Client.add(file);
-      if (!fileUploadResponse) {
-        throw new Error("File upload failed");
-      }
-      return fileUploadResponse.metadataHash;
-    } else {
-      return "";
-    }
+    return PinataService.uploadFile(file);
   }
 
   static async tambahPutusan(
@@ -226,7 +210,7 @@ export class ContractService {
       const res: ResponseBatalCabut = {
         idSengketa: createRequest.idSengketa.toString(),
         cid: cidMetadata,
-      }
+      };
 
       return toContractResponse(res, tx);
     } catch (error) {
@@ -250,7 +234,7 @@ export class ContractService {
       const res: ResponseBatalCabut = {
         idSengketa: createRequest.idSengketa.toString(),
         cid: cidMetadata,
-      }
+      };
 
       return toContractResponse(res, tx);
     } catch (error) {
@@ -314,16 +298,16 @@ export class ContractService {
   static async getDokumen(request: InputIdSengketaJadwal): Promise<StructCid> {
     try {
       const createRequest = ContractValidation.ID_SENGKETA_JADWAL.parse(request);
-      const response = await publicClient.readContract({
+      const response = (await publicClient.readContract({
         address: sengketaContractAddress as Address,
         abi: sengketAbi,
         functionName: "getDokumen",
         args: [createRequest.idSengketa, createRequest.idJadwal],
-      }) as string;
+      })) as string;
 
       let metadata: StructCid;
       if (response) {
-        metadata = await Client.getMetadata(response) as StructCid;
+        metadata = await PinataService.getMetadata(response);
         console.log("metadata: ", metadata);
         if (!metadata || !metadata.fileHash) {
           throw new Error("Metadata not found or invalid");
@@ -341,16 +325,16 @@ export class ContractService {
   static async getDokumenBatalCabut(request: InputIdSengketa): Promise<StructCid> {
     try {
       const createRequest = ContractValidation.ID_SENGKETA.parse(request);
-      const response = await publicClient.readContract({
+      const response = (await publicClient.readContract({
         address: sengketaContractAddress as Address,
         abi: sengketAbi,
         functionName: "getDokumenBatalCabut",
         args: [createRequest.idSengketa],
-      }) as string;
+      })) as string;
 
       let metadata: StructCid;
       if (response) {
-        metadata = await Client.getMetadata(response) as StructCid;
+        metadata = await PinataService.getMetadata(response);
         console.log("metadata: ", metadata);
         if (!metadata || !metadata.fileHash) {
           throw new Error("Metadata not found or invalid");
@@ -380,9 +364,7 @@ export class ContractService {
     }
   }
 
-  static async getSKPD(
-    request: InputIdSengketa
-  ): Promise<GetContractResponse<StructSKPD>> {
+  static async getSKPD(request: InputIdSengketa): Promise<GetContractResponse<StructSKPD>> {
     try {
       const createRequest = ContractValidation.ID_SENGKETA.parse(request);
       const response = (await publicClient.readContract({
