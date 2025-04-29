@@ -51,22 +51,19 @@ export type RequestBatalCabut = {
 export type ResponseBatalCabut = {
   idSengketa: string;
   cid?: string;
-}
+};
 
 export type ContractResponse<T = {}> = T & {
   hash: string;
 };
 
-export function toContractResponse<T>(
-  data: T,
-  response: string
-): ContractResponse<T> {
+export function toContractResponse<T>(data: T, response: string): ContractResponse<T> {
   return { ...data, hash: response };
 }
 
 export type InputIdSengketa = {
   idSengketa: string;
-}
+};
 
 export type InputIdSengketaJadwal = {
   idSengketa: string;
@@ -76,40 +73,41 @@ export type InputIdSengketaJadwal = {
 export type StructSengketa = {
   pemohon: string;
   termohon: string;
-}
+};
 
 export type StructSidang = {
   jenis: string;
   agenda: string;
   tanggal: string;
   alamat: string;
-}
+};
 
 export type StructSKPD = {
   jumlah: string;
   skpd: string[];
-}
+};
 
 export type StructCid = {
   name: string;
-  mimetype: string;
-  size: number;
-  extension: string;
-  fileHash: string;
-}
+  description: string;
+  attributes: {
+    mimetype: string;
+    size: number;
+    fileHash: string;
+    uploadedAt: string;
+    type: string;
+  };
+};
 
 export type StructJdih = {
   jdih?: string;
-}
+};
 
 export type GetContractResponse<T = {}> = T & {
   idSengketa: string;
   idJadwal?: string;
 };
 
-export function toGetContractResponse<T>(
-  response: any,
-  data: T
-): GetContractResponse<T> {
+export function toGetContractResponse<T>(response: any, data: T): GetContractResponse<T> {
   return { ...response, ...data };
 }

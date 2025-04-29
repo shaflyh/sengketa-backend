@@ -309,7 +309,7 @@ export class ContractService {
       if (response) {
         metadata = await PinataService.getMetadata(response);
         console.log("metadata: ", metadata);
-        if (!metadata || !metadata.fileHash) {
+        if (!metadata || !metadata.attributes.fileHash) {
           throw new Error("Metadata not found or invalid");
         }
       } else {
@@ -318,7 +318,7 @@ export class ContractService {
       return metadata;
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to get Dokumen");
+      throw new Error(`Failed to get Dokumen: ${error}`);
     }
   }
 
@@ -336,7 +336,7 @@ export class ContractService {
       if (response) {
         metadata = await PinataService.getMetadata(response);
         console.log("metadata: ", metadata);
-        if (!metadata || !metadata.fileHash) {
+        if (!metadata || !metadata.attributes.fileHash) {
           throw new Error("Metadata not found or invalid");
         }
       } else {
