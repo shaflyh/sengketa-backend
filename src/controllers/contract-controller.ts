@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ContractService } from "../services/contract-service";
+import { PinataService } from "../services/pinata-service";
 import {
   MenerimaSengketa,
   ValidasiSengketa,
@@ -11,7 +12,6 @@ import {
   InputIdSengketaJadwal,
   StructCid,
 } from "../models/contract-model";
-import { Client } from "../services/ipfs-service";
 
 export class ContractController {
   /**
@@ -36,11 +36,7 @@ export class ContractController {
    *       400:
    *         description: Bad request
    */
-  static async menerimaSengketa(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async menerimaSengketa(req: Request, res: Response, next: NextFunction) {
     try {
       const request: MenerimaSengketa = req.body as MenerimaSengketa;
       const response = await ContractService.menerimaSengketa(request);
@@ -74,11 +70,7 @@ export class ContractController {
    *       400:
    *         description: Bad request
    */
-  static async validasiSengketa(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async validasiSengketa(req: Request, res: Response, next: NextFunction) {
     try {
       const request: ValidasiSengketa = req.body as ValidasiSengketa;
       const response = await ContractService.validasiSengketa(request);
@@ -112,11 +104,7 @@ export class ContractController {
    *       400:
    *         description: Bad request
    */
-  static async pembuatanJadwalSidangAwal(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async pembuatanJadwalSidangAwal(req: Request, res: Response, next: NextFunction) {
     try {
       const request: PembuatanSidangAwal = req.body as PembuatanSidangAwal;
       const response = await ContractService.pembuatanJadwalSidangAwal(request);
@@ -429,11 +417,7 @@ export class ContractController {
    *       500:
    *         description: Server error
    */
-  static async getPemohonTermohon(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async getPemohonTermohon(req: Request, res: Response, next: NextFunction) {
     try {
       const request: InputIdSengketa = req.body as InputIdSengketa;
       const result = await ContractService.getPemohonTermohon(request);
@@ -502,28 +486,16 @@ export class ContractController {
   static async getDokumen(req: Request, res: Response, next: NextFunction) {
     try {
       const request: InputIdSengketaJadwal = req.body as InputIdSengketaJadwal;
-      const result: StructCid = (await ContractService.getDokumen(
-        request
-      )) as StructCid;
-      if (result.fileHash) {
-        const fileResponse = await Client.cat(result.fileHash);
-        if (fileResponse) {
-          const filename = `${result.name}${result.extension}`;
-          res.setHeader(
-            "Content-Disposition",
-            `attachment; filename="${filename}"`
-          );
-          res.setHeader(
-            "Content-Type",
-            result.mimetype || "application/octet-stream"
-          );
-          res.type("application/octet-stream"); // Set response type to binary
-          res.end(Buffer.from(fileResponse)); // Ensure response is sent as a buffer
-        } else {
-          res.status(404).send("File not found");
-        }
+      const result: StructCid = (await ContractService.getDokumen(request)) as StructCid;
+      if (result.attributes.fileHash) {
+        const filename = result.name;
+        res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+        res.setHeader("Content-Type", result.attributes.mimetype || "application/octet-stream");
+        // Get the file content from Pinata gateway
+        const fileContent = await PinataService.getFileContent(result.attributes.fileHash);
+        res.end(fileContent);
       } else {
-        res.status(404).send("Metadata fileHash not found");
+        res.status(404).send("File hash not found");
       }
     } catch (error) {
       console.error(error);
@@ -555,37 +527,20 @@ export class ContractController {
    *       500:
    *         description: Server error
    */
-  static async getDokumenBatalCabut(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
+  static async getDokumenBatalCabut(req: Request, res: Response, next: NextFunction) {
     try {
       const request: InputIdSengketa = req.body as InputIdSengketa;
-      const result: StructCid = (await ContractService.getDokumenBatalCabut(
-        request
-      )) as StructCid;
+      const result: StructCid = (await ContractService.getDokumenBatalCabut(request)) as StructCid;
 
-      if (result.fileHash) {
-        const fileResponse = await Client.cat(result.fileHash);
-
-        if (fileResponse) {
-          const filename = `${result.name}${result.extension}`;
-          res.setHeader(
-            "Content-Disposition",
-            `attachment; filename="${filename}"`
-          );
-          res.setHeader(
-            "Content-Type",
-            result.mimetype || "application/octet-stream"
-          );
-          res.type("application/octet-stream"); // Set response type to binary
-          res.end(Buffer.from(fileResponse)); // Ensure response is sent as a buffer
-        } else {
-          res.status(404).send("File not found");
-        }
+      if (result.attributes.fileHash) {
+        const filename = result.name;
+        res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+        res.setHeader("Content-Type", result.attributes.mimetype || "application/octet-stream");
+        // Get the file content from Pinata gateway
+        const fileContent = await PinataService.getFileContent(result.attributes.fileHash);
+        res.end(fileContent);
       } else {
-        res.status(404).send("Metadata fileHash not found");
+        res.status(404).send("File hash not found");
       }
     } catch (error) {
       console.error(error);

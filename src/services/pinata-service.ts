@@ -90,4 +90,19 @@ export class PinataService {
       throw error;
     }
   }
+
+  static async getFileContent(cid: string): Promise<Buffer> {
+    try {
+      const response = await axios.get(`https://gateway.pinata.cloud/ipfs/${cid}`, {
+        headers: {
+          Authorization: `Bearer ${PINATA_JWT}`,
+        },
+        responseType: "arraybuffer",
+      });
+      return Buffer.from(response.data);
+    } catch (error) {
+      console.error("Error retrieving file content from Pinata:", error);
+      throw error;
+    }
+  }
 }
