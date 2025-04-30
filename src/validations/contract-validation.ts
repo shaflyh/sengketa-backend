@@ -16,8 +16,9 @@ const numberInput = z
     }
   )
   .transform((val) => BigInt(val));
+
 const statusCourtSchema = z
-  .string()
+  .union([z.string(), z.number()])
   .refine(
     (val) => {
       try {
@@ -32,13 +33,14 @@ const statusCourtSchema = z
     }
   )
   .transform((val) => BigInt(val));
-  const statusDecisionSchema = z
-  .string()
+
+const statusDecisionSchema = z
+  .union([z.string(), z.number()])
   .refine(
     (val) => {
       try {
         const statusBigInt = BigInt(val);
-        return statusBigInt >= BigInt(0) && statusBigInt <= BigInt(5);
+        return statusBigInt >= BigInt(0) && statusBigInt <= BigInt(7);
       } catch {
         return false;
       }
@@ -48,6 +50,7 @@ const statusCourtSchema = z
     }
   )
   .transform((val) => BigInt(val));
+
 const futureDateStringSchema = z
   .string()
   .refine(
@@ -68,11 +71,14 @@ const futureDateStringSchema = z
     return BigInt(timestamp); // Convert to BigInt
   });
 
-  const pdfFileInput = z.custom<Express.Multer.File>((file) => {
+const pdfFileInput = z.custom<Express.Multer.File>(
+  (file) => {
     return file instanceof Object && file.mimetype === "application/pdf";
-  }, {
+  },
+  {
     message: "Expected a PDF file",
-  });
+  }
+);
 
 export class ContractValidation {
   static readonly MENERIMA: ZodType = z.object({
@@ -123,7 +129,7 @@ export class ContractValidation {
     idSengketa: numberInput,
     cid: pdfFileInput.optional(),
   });
-  
+
   static readonly ID_SENGKETA: ZodType = z.object({
     idSengketa: numberInput,
   });
