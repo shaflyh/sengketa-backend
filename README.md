@@ -1,96 +1,132 @@
-# IPFS AND SMART CONTRACT API
+# Sengketa Backend
 
-## Description
-This project is designed to store and fetch data from IPFS nodes running in Docker using Express.js and the Helia library. The project follows RESTful API best practices.
+Backend service untuk integrasi dengan Smart Contract Sengketa. Aplikasi ini menyediakan REST API untuk berinteraksi dengan smart contract Sengketa pada blockchain.
 
-## Prerequisites
-Before you begin, ensure you have met the following requirements:
-- Metamask
-- Docker
-- Docker Compose
-- Node.js
-- Yarn
+## Teknologi
 
-## Getting Started
+- Node.js & TypeScript
+- Express.js - Web framework
+- Viem - Ethereum/Web3 library
+- Swagger - API documentation
+- Winston - Logging
+- Zod - Schema validation
 
-### Installation
-1. Clone the repository to your local machine:
-    ```bash
-    git clone https://github.com/yourusername/yourprojectname.git
-    cd yourprojectname
-    cd rest-api
-    ```
+## Fitur
 
-2. Install the dependencies using Yarn:
-    ```bash
-    yarn install
-    ```
-3. Rename .env.example:
-    ```bash
-    mv .env.example .env
-    ```
+- REST API endpoints untuk interaksi dengan smart contract
+- Swagger documentation
+- File upload handling dengan Multer
+- Type-safe dengan TypeScript
+- Logging system
+- Input validation
+- CORS support
 
-### Setup Secret cluster
-1. run this comman line:
-    ```bash
-    openssl rand -hex 32
-    ```
-2. Copy the ouput and save to .env file
+## Struktur Proyek
 
-
-### Running IPFS Nodes
-1. Build Docker containers:
-    ```bash
-    docker-compose build
-    ```
-
-2. Start the IPFS nodes:
-    ```bash
-    ./private-ipfs.sh start
-    ```
-
-3. Stop the IPFS nodes:
-    ```bash
-    ./private-ipfs.sh stop
-    ```
-
-### Verifying Docker Setup
-1. Test if Docker and IPFS nodes are running correctly:
-    ```bash
-    ./private-ipfs.sh test
-    ```
-
-### Run Apps
-- run comman line: 
-    ```
-    yarn run dev
-    ```
-- see on this: http://localhost:3003/api-docs/
-
-## Project Structure (Update lagi)
-- `ipfs`: Contains data and configurations to facilitate running Docker for IPFS
-- `node_modules`: Project dependencies managed by Yarn
-- `src`: Express.js project code
-    - `application`: Core application logic
-    - `controller`: Handles incoming requests and responses
-    - `doc`: Documentation fo Open API
-    - `middleware`: Middleware functions
-    - `models`: Data models
-    - `routes`: API routes
-    - `services`: Business logic
-    - `validations`: Request validation
-- `test`: Unit testing for Express.js application
-
-## Scripts
-- `private-ipfs.sh`: Script to manage IPFS nodes
-
-### Delete Docker Data
-```bash
-docker system prune -a
 ```
-WARNING! This will remove:
-  - all stopped containers
-  - all networks not used by at least one container
-  - all images without at least one container associated to them
-  - all build cache
+src/
+├── applications/   # Business logic
+├── config/        # Konfigurasi aplikasi
+├── controllers/   # Route handlers
+├── doc/          # Swagger documentation
+├── middlewares/  # Express middlewares
+├── models/       # Data models
+├── routes/       # API routes
+├── services/     # External services integration
+└── validations/  # Input validation schemas
+```
 
+## Instalasi
+
+1. Clone repository
+```bash
+git clone [repository-url]
+cd sengketa-backend
+```
+
+2. Install dependencies
+```bash
+npm install
+# atau
+yarn install
+```
+
+3. Setup environment variables
+```bash
+cp .env.example .env
+# Edit .env sesuai konfigurasi yang dibutuhkan
+```
+
+## Development
+
+Menjalankan dalam mode development:
+```bash
+npm run dev
+# atau
+yarn dev
+```
+
+## Production
+
+Build dan jalankan untuk production:
+```bash
+npm run build
+npm start
+# atau
+yarn build
+yarn start
+```
+
+## Docker
+
+### Menggunakan Docker biasa
+
+Build image:
+```bash
+docker build -t sengketa-backend .
+```
+
+Jalankan container:
+```bash
+docker run -p 3003:3003 sengketa-backend
+```
+
+### Menggunakan Docker Compose
+
+1. Buat file `docker-compose.yml`:
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+```
+
+2. Jalankan dengan Docker Compose:
+```bash
+# Memulai services
+docker-compose up -d
+
+# Melihat logs
+docker-compose logs -f
+
+# Menghentikan services
+docker-compose down
+```
+
+## API Documentation
+
+Setelah menjalankan aplikasi, dokumentasi API dapat diakses di:
+```
+http://localhost:3003/api-docs
+```
+
+## License
+
+MIT
