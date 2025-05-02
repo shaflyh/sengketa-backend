@@ -1,20 +1,71 @@
-# Use the official Node.js 20 image.
-FROM node:20
+# Build stage
+FROM node:20-slim AS builder
 
-# Set the working directory in the container to /usr/src/app.
-WORKDIR /usr/src/app
+# Set working directory
+WORKDIR /app
 
-# Copy package.json and yarn.lock to the working directory.
-COPY package*.json yarn.lock ./
+# Copy package files for dependency installation
+COPY package*.json ./
 
-# Install dependencies.
-RUN yarn install
+# Install dependencies
+RUN npm ci
 
-# Copy the rest of the application code to the working directory.
+# Copy source code
 COPY . .
 
-# Expose the port the app runs on.
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM node:20-slim AS production
+
+# Set NODE_ENV
+ENV NODE_ENV=production
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm ci --omit=dev
+
+# Copy built app from builder stage
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/uploads ./uploads
+
+# Expose port
 EXPOSE 3003
 
-# Default command to keep the container running
-CMD ["yarn", "run", "dev"]
+# Create a non-root user and switch to it
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --gid 1001 appuser
+USER appuser
+
+# Start the server
+CMD ["npm", "start"]
+
+# Development stage (use as alternative target)
+FROM node:20-slim AS development
+
+# Set NODE_ENV
+ENV NODE_ENV=development
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3003
+
+# Start in dev mode
+CMD ["npm", "run", "dev"]

@@ -79,46 +79,53 @@ yarn start
 
 ## Docker
 
-### Menggunakan Docker biasa
+### Dockerfile Optimasi
 
-Build image:
+Dockerfile telah dioptimasi menggunakan:
+- **Multi-stage builds** - memisahkan build stage dan production stage
+- **Optimasi ukuran image** - menggunakan node:20-slim sebagai base image
+- **Security best practices** - menggunakan non-root user
+- **Caching layer** - memisahkan dependency installation dari code copy
+- **Target environments** - support untuk production dan development
+
+Build untuk development:
 ```bash
-docker build -t sengketa-backend .
+docker build -t sengketa-backend:dev .
 ```
 
-Jalankan container:
+Build untuk production:
 ```bash
-docker run -p 3003:3003 sengketa-backend
+docker build --target production -t sengketa-backend:prod .
+```
+
+Jalankan container development:
+```bash
+docker run -p 3003:3003 sengketa-backend:dev
+```
+
+Jalankan container production:
+```bash
+docker run -p 3003:3003 sengketa-backend:prod
 ```
 
 ### Menggunakan Docker Compose
 
-1. Buat file `docker-compose.yml`:
-```yaml
-version: '3.8'
-services:
-  app:
-    build: .
-    ports:
-      - "3003:3003"
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - ./uploads:/app/uploads
-    restart: unless-stopped
-```
-
-2. Jalankan dengan Docker Compose:
+Jalankan dengan Docker Compose:
 ```bash
-# Memulai services
-docker-compose up -d
+# Memulai services dengan development environment (default)
+docker compose up -d
+
+# Memulai services dengan production environment (edit compose.yaml target: production)
+# docker compose up -d
 
 # Melihat logs
-docker-compose logs -f
+docker compose logs -f
 
 # Menghentikan services
-docker-compose down
+docker compose down
 ```
+
+> **Catatan**: Gunakan target `development` atau `production` di compose.yaml sesuai kebutuhan.
 
 ## API Documentation
 
