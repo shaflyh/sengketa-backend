@@ -1,7 +1,6 @@
 import express from 'express';
 import multer from 'multer';
 import { ContractController } from '../controllers/contract-controller';
-import { addFileToIPFS, getFileFromIPFS } from '../controllers/ipfs-controller';
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
